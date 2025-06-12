@@ -13,32 +13,48 @@ public class GameManager : MonoBehaviour
     public Text scoreText; // 점수 표시를 위한 UI 텍스트
     public GameObject gameOverUI; // 게임 오버 UI 오브젝트
     public bool isGameOver = false; // 게임 오버 상태를 나타내는 변수
-    private int score = 0; // 현재 점수
+    public int score = 0; // 현재 점수
+
     private void Awake() // Start() 함수보다 빠르게 실행
     {
         if (instance == null)
         {
             instance = this; // instance에 현재 오브젝트를 할당 해서 생성
-            DontDestroyOnLoad(gameObject); // 다른 씬으로 이동 해도 게임 오브젝트가 파괴되지 않도록 설정
+            SceneManager.sceneLoaded += OnSceneLoaded; // 씬 로드 시마다 호출됨
         }
         else if (instance != this) // instnace가 null이 아니고, 현재 오브젝트가 instance와 다르다면 
         {
-            Debug.LogWarning("씬에 두개 이상의 게임매니저가 존재 합니다!");
             Destroy(gameObject); // 이미 인스턴스가 존재하면 현재 오브젝트를 파괴
         }
     }
-    void Start()
+
+    private void OnDestroy()
     {
-        
+        // 씬 로드 이벤트 제거 (메모리 누수 방지)
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
-
-
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // 씬 로드될 때마다 다시 UI 찾기
+        var canvas = GameObject.Find("Canvas");
+        if (canvas != null)
+        {
+            scoreText = canvas.transform.GetChild(0).GetComponent<Text>();
+            gameOverUI = canvas.transform.GetChild(1).gameObject;
+        }
+    }
     void Update()
     {
         if (isGameOver && Input.GetMouseButtonDown(0)) // 게임 오버 상태에서 마우스 클릭시
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name); // 현재 씬을 다시 로드하여 게임을 재시작
+
         }    
+        if(Input.GetKeyDown(KeyCode.Escape)) // ESC 키를 누르면
+        {
+            QuitGame(); // 게임 종료
+        }
+
     }
     public void AddScore(int newScore)
     {
@@ -53,6 +69,11 @@ public class GameManager : MonoBehaviour
     {
         isGameOver = true; // 게임 오버 상태로 변경
         gameOverUI.SetActive(true); // 게임 오버 UI 활성화
+    }
+    public void QuitGame()
+    {
+        Application.Quit(); // 게임 종료
+       
     }
 
 }

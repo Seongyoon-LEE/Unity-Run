@@ -48,6 +48,6 @@ TagManager:
   - name: ForeGround
     uniqueID: 2072598043
     locked: 0
-  - name: MidGround
+  - name: MiddleGround
     uniqueID: 1905373829
     locked: 0
